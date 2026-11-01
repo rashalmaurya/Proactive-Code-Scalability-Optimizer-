@@ -10,17 +10,20 @@ Paste this file (or the relevant section) at the top of every new chat.
 ## Project Snapshot
 
 - **Name:** CodeScale AI (extension id `codescale-ai`)
-- **Repo:** YOUR GITHUB LINK HERE
-- **Local folder:** `D:\Capstone Project\codescale-ai`
+- **Repo:** https://github.com/rashalmaurya/Proactive-Code-Scalability-Optimizer-
+- **Local folder:** `C:\Users\DELL\Desktop\rashal\rashal\New folder\Proactive-Code-Scalability-Optimizer`
 - **Stack:** VS Code extension (JavaScript), Python 3.12 engine via `uv`, Groq `openai/gpt-oss-120b`
 - **Goal:** International AI coding competition + capstone
 - **Environment:** Windows 11, PowerShell (no `&&`), `uv run` for all Python
-- **Last updated:** 2026-10-28
+- **Last updated:** 2026-11-01
 
 ---
 
 ## Milestone 0 — Foundation
 
+- ✅ Git installed (version 2.56.0.windows.4)
+- ✅ GitHub repo created and files pushed
+- ✅ PROGRESS.md and ARCHITECTURE.md created
 - ⬜ Extension scaffold created and opens
 - ⬜ Hello World command works
 - ⬜ Output channel "CodeScale AI"
@@ -28,18 +31,17 @@ Paste this file (or the relevant section) at the top of every new chat.
 - ⬜ API key in VS Code Secret Storage
 - ⬜ Groq chat response works
 - ⬜ `analyzer/analyzer.py` + `analyzer/sample.py` (AST analysis started)
-- ⬜ Git initialised, pushed to GitHub, `.gitignore` covers `node_modules` and `.env`
 
 ---
 
 ## Roadmap
 
 ### Phase 1 — Make the base solid
-- [ ] 1.1 Verify existing work
-- [ ] 1.2 Add `pyproject.toml` (uv, pytest, ruff) + first Python test
-- [ ] 1.3 Make analyzer output structured JSON (`cli.py`) with tests
-- [ ] 1.4 Extension calls engine and shows findings in Output channel
-- [ ] 1.5 Commit + update docs
+- ⬜ 1.1 Verify existing work
+- ⬜ 1.2 Add `pyproject.toml` (uv, pytest, ruff) + first Python test
+- ⬜ 1.3 Make analyzer output structured JSON (`cli.py`) with tests
+- ⬜ 1.4 Extension calls engine and shows findings in Output channel
+- ⬜ 1.5 Commit + update docs
 
 ### Phase 2 — Core evidence engine
 - [ ] 2.1 Feature 1: detect inefficient patterns
@@ -75,13 +77,13 @@ Paste this file (or the relevant section) at the top of every new chat.
 
 ## Current Step
 
-**Step 1 — Set up project from scratch.** (Not started)
+**Phase 1 Step 1.1 — Set up VS Code extension scaffold**
 
 ## Session Log
 
 | Date | Done | Next |
 |---|---|---|
-| 2026-10-28 | Created PROGRESS.md and ARCHITECTURE.md | Step 1: install Git, clone repo, set up project |
+| 2026-11-01 | Installed Git, created GitHub repo, pushed PROGRESS.md and ARCHITECTURE.md | Phase 1 Step 1.1: create VS Code extension scaffold |
 
 ## Known Bugs / Notes
 
@@ -89,4 +91,4 @@ Paste this file (or the relevant section) at the top of every new chat.
 
 ## Gotchas Found
 
-- (none yet)
+- Git needed a full computer restart before it was recognised in the terminal
