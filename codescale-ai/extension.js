@@ -1,36 +1,60 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
+// @ts-nocheck
 const vscode = require('vscode');
+const { spawn } = require('child_process');
+const path = require('path');
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-
-/**
- * @param {vscode.ExtensionContext} context
- */
 function activate(context) {
+    const outputChannel = vscode.window.createOutputChannel('CodeScale AI');
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "codescale-ai" is now active!');
+    let analyzeCommand = vscode.commands.registerCommand('codescale-ai.analyze', function () {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showErrorMessage('No file open. Please open a Python file first.');
+            return;
+        }
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('codescale-ai.helloWorld', function () {
-		// The code you place here will be executed every time your command is executed
+        const sourceCode = editor.document.getText();
+        const analyzerPath = path.join(context.extensionPath, '..', 'analyzer');
 
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from codescale-ai!');
-	});
+        outputChannel.show();
+        outputChannel.appendLine('🔍 Analysing code...');
 
-	context.subscriptions.push(disposable);
+        const python = spawn('uv', ['run', 'python', 'cli.py'], {
+            cwd: analyzerPath
+        });
+
+        python.stdin.write(sourceCode);
+        python.stdin.end();
+
+        let output = '';
+        python.stdout.on('data', (data) => {
+            output += data.toString();
+        });
+
+        python.stderr.on('data', (data) => {
+            outputChannel.appendLine('Error: ' + data.toString());
+        });
+
+        python.on('close', () => {
+            try {
+                const result = JSON.parse(output);
+                outputChannel.appendLine('✅ Analysis complete!\n');
+                result.findings.forEach(f => {
+                    if (f.line) {
+                        outputChannel.appendLine(`[${f.type.toUpperCase()}] Line ${f.line}: ${f.message}`);
+                    } else {
+                        outputChannel.appendLine(`[${f.type.toUpperCase()}] ${f.message}`);
+                    }
+                });
+            } catch (e) {
+                outputChannel.appendLine('Could not parse results: ' + output);
+            }
+        });
+    });
+
+    context.subscriptions.push(analyzeCommand);
 }
 
-// This method is called when your extension is deactivated
 function deactivate() {}
 
-module.exports = {
-	activate,
-	deactivate
-}
+module.exports = { activate, deactivate };

@@ -12,11 +12,17 @@
   "activationEvents": [],
   "main": "./extension.js",
   "contributes": {
-    "commands": [{
-      "command": "codescale-ai.helloWorld",
-      "title": "Hello World"
-    }]
-  },
+    "commands": [
+        {
+            "command": "codescale-ai.helloWorld",
+            "title": "Hello World"
+        },
+        {
+            "command": "codescale-ai.analyze",
+            "title": "CodeScale AI: Analyze Code"
+        }
+    ]
+},
   "scripts": {
     "lint": "eslint .",
     "pretest": "npm run lint",
