@@ -5,7 +5,7 @@ const path = require('path');
 
 const diagnosticCollection = vscode.languages.createDiagnosticCollection('codescale-ai');
 
-function getWebviewContent(findings, filename) {
+function getWebviewContent(findings, filename, complexity) {
     const warnings = findings.filter(f => f.type === 'warning').length;
     const infos = findings.filter(f => f.type === 'info').length;
     const errors = findings.filter(f => f.type === 'error').length;
@@ -18,7 +18,6 @@ function getWebviewContent(findings, filename) {
         };
         const c = colors[f.type] || colors.info;
         const line = f.line ? `<span class="line-badge">Line ${f.line}</span>` : '';
-
         return `
         <div class="finding" style="border-left: 4px solid ${c.border}; background: ${c.bg};">
             <div class="finding-header">
@@ -28,6 +27,10 @@ function getWebviewContent(findings, filename) {
             <p class="finding-message">${f.message}</p>
         </div>`;
     }).join('');
+
+    const complexityColor = complexity === 'O(1)' ? '#4ec9b0' :
+        complexity === 'O(n)' ? '#5bc0de' :
+        complexity === 'O(n^2)' ? '#f0ad4e' : '#d9534f';
 
     return `<!DOCTYPE html>
     <html>
@@ -50,15 +53,8 @@ function getWebviewContent(findings, filename) {
                 padding-bottom: 15px;
                 border-bottom: 1px solid #333;
             }
-            .header h1 {
-                color: #569cd6;
-                font-size: 1.3em;
-            }
-            .filename {
-                color: #888;
-                font-size: 0.85em;
-                margin-top: 2px;
-            }
+            .header h1 { color: #569cd6; font-size: 1.3em; }
+            .filename { color: #888; font-size: 0.85em; margin-top: 2px; }
             .stats {
                 display: flex;
                 gap: 10px;
@@ -70,14 +66,30 @@ function getWebviewContent(findings, filename) {
                 border-radius: 6px;
                 text-align: center;
             }
-            .stat-number {
-                font-size: 1.8em;
-                font-weight: bold;
+            .stat-number { font-size: 1.8em; font-weight: bold; }
+            .stat-label { font-size: 0.75em; opacity: 0.8; margin-top: 2px; }
+            .feature-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                margin-bottom: 20px;
             }
-            .stat-label {
+            .feature-card {
+                padding: 12px;
+                border-radius: 6px;
+                background: #252526;
+                border: 1px solid #333;
+            }
+            .feature-card-title {
                 font-size: 0.75em;
-                opacity: 0.8;
-                margin-top: 2px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 6px;
+            }
+            .feature-card-value {
+                font-size: 1.1em;
+                font-weight: bold;
             }
             .section-title {
                 color: #9cdcfe;
@@ -98,10 +110,7 @@ function getWebviewContent(findings, filename) {
                 gap: 8px;
                 margin-bottom: 6px;
             }
-            .type-badge {
-                font-size: 0.8em;
-                font-weight: bold;
-            }
+            .type-badge { font-size: 0.8em; font-weight: bold; }
             .line-badge {
                 background: #333;
                 color: #888;
@@ -109,15 +118,8 @@ function getWebviewContent(findings, filename) {
                 border-radius: 3px;
                 font-size: 0.75em;
             }
-            .finding-message {
-                color: #ccc;
-                line-height: 1.5;
-            }
-            .empty {
-                text-align: center;
-                padding: 30px;
-                color: #4ec9b0;
-            }
+            .finding-message { color: #ccc; line-height: 1.5; }
+            .empty { text-align: center; padding: 30px; color: #4ec9b0; }
             .footer {
                 margin-top: 20px;
                 padding-top: 15px;
@@ -148,6 +150,26 @@ function getWebviewContent(findings, filename) {
             <div class="stat-card" style="background:#1a2530; border: 1px solid #5bc0de33">
                 <div class="stat-number" style="color:#5bc0de">${infos}</div>
                 <div class="stat-label">Info</div>
+            </div>
+        </div>
+
+        <div class="section-title">Analysis Summary</div>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-card-title">Time Complexity</div>
+                <div class="feature-card-value" style="color:${complexityColor}">${complexity || 'Unknown'}</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-card-title">Total Issues</div>
+                <div class="feature-card-value" style="color:#d4d4d4">${findings.length}</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-card-title">Risk Level</div>
+                <div class="feature-card-value" style="color:${warnings > 2 ? '#d9534f' : warnings > 0 ? '#f0ad4e' : '#4ec9b0'}">${warnings > 2 ? 'High' : warnings > 0 ? 'Medium' : 'Low'}</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-card-title">Status</div>
+                <div class="feature-card-value" style="color:${errors > 0 ? '#d9534f' : '#4ec9b0'}">${errors > 0 ? 'Has Errors' : 'Analysed'}</div>
             </div>
         </div>
 
@@ -184,7 +206,7 @@ function activate(context) {
             panel.onDidDispose(() => { panel = null; });
         }
 
-        panel.webview.html = getWebviewContent([{ type: 'info', message: 'Analysing your code...' }], filename);
+        panel.webview.html = getWebviewContent([{ type: 'info', message: 'Analysing your code...' }], filename, '...');
 
         const python = spawn('uv', ['run', 'python', 'cli.py'], {
             cwd: analyzerPath
@@ -218,7 +240,24 @@ function activate(context) {
                 });
 
                 diagnosticCollection.set(editor.document.uri, diagnostics);
-                panel.webview.html = getWebviewContent(result.findings, filename);
+
+                const complexityPython = spawn('uv', ['run', 'python', '-c',
+                    `import sys; sys.path.insert(0, '.'); from complexity import estimate_complexity; import json; print(json.dumps(estimate_complexity(sys.stdin.read())))`
+                ], { cwd: analyzerPath });
+
+                complexityPython.stdin.write(sourceCode);
+                complexityPython.stdin.end();
+
+                let complexityOutput = '';
+                complexityPython.stdout.on('data', (d) => { complexityOutput += d.toString(); });
+                complexityPython.on('close', () => {
+                    let complexity = 'Unknown';
+                    try {
+                        const cr = JSON.parse(complexityOutput);
+                        complexity = cr.complexity || 'Unknown';
+                    } catch (e) {}
+                    panel.webview.html = getWebviewContent(result.findings, filename, complexity);
+                });
 
             } catch (e) {
                 outputChannel.appendLine('Could not parse results: ' + output);
