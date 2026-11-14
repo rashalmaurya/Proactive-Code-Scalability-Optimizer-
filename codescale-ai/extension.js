@@ -28,6 +28,25 @@ function getWebviewContent(findings, filename, complexity) {
         </div>`;
     }).join('');
 
+    const suggestionRows = findings.filter(f => f.type === 'warning').map(f => {
+        const suggestions = {
+            'nested': { fix: 'Use a dictionary or set instead of nested loops', example: 'seen = set(items)' },
+            'set': { fix: 'Convert list to set before the loop', example: 'items_set = set(items)' },
+            'len': { fix: 'Store len() result in a variable before loop', example: 'n = len(items)' }
+        };
+        const key = f.message.toLowerCase().includes('nested') ? 'nested' :
+                    f.message.toLowerCase().includes('set') ? 'set' : 'len';
+        const s = suggestions[key] || { fix: 'Review this code', example: '' };
+        return `<div class="finding" style="border-left:4px solid #4ec9b0; background:#1a2d2a;">
+            <div class="finding-header">
+                <span style="color:#4ec9b0">💡 FIX</span>
+                <span class="line-badge">Line ${f.line || '?'}</span>
+            </div>
+            <p class="finding-message">${s.fix}</p>
+            ${s.example ? `<code style="color:#ce9178;background:#111;padding:4px 8px;border-radius:3px;display:block;margin-top:6px">${s.example}</code>` : ''}
+        </div>`;
+    }).join('');
+
     const complexityColor = complexity === 'O(1)' ? '#4ec9b0' :
         complexity === 'O(n)' ? '#5bc0de' :
         complexity === 'O(n^2)' ? '#f0ad4e' : '#d9534f';
@@ -55,79 +74,22 @@ function getWebviewContent(findings, filename, complexity) {
             }
             .header h1 { color: #569cd6; font-size: 1.3em; }
             .filename { color: #888; font-size: 0.85em; margin-top: 2px; }
-            .stats {
-                display: flex;
-                gap: 10px;
-                margin-bottom: 20px;
-            }
-            .stat-card {
-                flex: 1;
-                padding: 12px;
-                border-radius: 6px;
-                text-align: center;
-            }
+            .stats { display: flex; gap: 10px; margin-bottom: 20px; }
+            .stat-card { flex: 1; padding: 12px; border-radius: 6px; text-align: center; }
             .stat-number { font-size: 1.8em; font-weight: bold; }
             .stat-label { font-size: 0.75em; opacity: 0.8; margin-top: 2px; }
-            .feature-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-                margin-bottom: 20px;
-            }
-            .feature-card {
-                padding: 12px;
-                border-radius: 6px;
-                background: #252526;
-                border: 1px solid #333;
-            }
-            .feature-card-title {
-                font-size: 0.75em;
-                color: #888;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                margin-bottom: 6px;
-            }
-            .feature-card-value {
-                font-size: 1.1em;
-                font-weight: bold;
-            }
-            .section-title {
-                color: #9cdcfe;
-                font-size: 0.9em;
-                font-weight: bold;
-                margin-bottom: 10px;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-            }
-            .finding {
-                padding: 12px;
-                margin-bottom: 10px;
-                border-radius: 4px;
-            }
-            .finding-header {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                margin-bottom: 6px;
-            }
+            .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+            .feature-card { padding: 12px; border-radius: 6px; background: #252526; border: 1px solid #333; }
+            .feature-card-title { font-size: 0.75em; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+            .feature-card-value { font-size: 1.1em; font-weight: bold; }
+            .section-title { color: #9cdcfe; font-size: 0.9em; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+            .finding { padding: 12px; margin-bottom: 10px; border-radius: 4px; }
+            .finding-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
             .type-badge { font-size: 0.8em; font-weight: bold; }
-            .line-badge {
-                background: #333;
-                color: #888;
-                padding: 1px 6px;
-                border-radius: 3px;
-                font-size: 0.75em;
-            }
+            .line-badge { background: #333; color: #888; padding: 1px 6px; border-radius: 3px; font-size: 0.75em; }
             .finding-message { color: #ccc; line-height: 1.5; }
             .empty { text-align: center; padding: 30px; color: #4ec9b0; }
-            .footer {
-                margin-top: 20px;
-                padding-top: 15px;
-                border-top: 1px solid #333;
-                color: #555;
-                font-size: 0.75em;
-                text-align: center;
-            }
+            .footer { margin-top: 20px; padding-top: 15px; border-top: 1px solid #333; color: #555; font-size: 0.75em; text-align: center; }
         </style>
     </head>
     <body>
@@ -175,6 +137,9 @@ function getWebviewContent(findings, filename, complexity) {
 
         <div class="section-title">Findings</div>
         ${rows || '<div class="empty">✅ No issues found! Your code looks clean.</div>'}
+
+        <div class="section-title" style="margin-top:20px">Suggestions</div>
+        ${suggestionRows || '<p style="color:#888">No suggestions available.</p>'}
 
         <div class="footer">CodeScale AI — Proactive Code Scalability Optimizer</div>
     </body>
