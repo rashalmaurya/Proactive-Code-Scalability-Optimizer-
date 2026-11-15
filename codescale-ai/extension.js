@@ -5,10 +5,50 @@ const path = require('path');
 
 const diagnosticCollection = vscode.languages.createDiagnosticCollection('codescale-ai');
 
+function getRobotSVG(mood) {
+    const faceColor = mood === 'happy' ? '#4ec9b0' : mood === 'warning' ? '#f0ad4e' : '#d9534f';
+    const eyeColor = '#1e1e1e';
+    return `
+    <svg width="80" height="100" viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg" class="robot">
+      <!-- Body -->
+      <rect x="20" y="50" width="40" height="35" rx="8" fill="${faceColor}" opacity="0.9"/>
+      <!-- Head -->
+      <rect x="15" y="15" width="50" height="40" rx="12" fill="${faceColor}"/>
+      <!-- Antenna -->
+      <rect x="37" y="5" width="6" height="12" rx="3" fill="${faceColor}"/>
+      <circle cx="40" cy="4" r="4" fill="#fff" opacity="0.9"/>
+      <!-- Eyes -->
+      <ellipse class="eye-left" cx="30" cy="32" rx="6" ry="6" fill="#1a1a2e"/>
+      <ellipse class="eye-right" cx="50" cy="32" rx="6" ry="6" fill="#1a1a2e"/>
+      <!-- Eye shine -->
+      <circle cx="32" cy="30" r="2" fill="white" opacity="0.8"/>
+      <circle cx="52" cy="30" r="2" fill="white" opacity="0.8"/>
+      <!-- Mouth -->
+      ${mood === 'happy'
+        ? '<path d="M 28 44 Q 40 52 52 44" stroke="#1a1a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>'
+        : mood === 'warning'
+        ? '<line x1="28" y1="46" x2="52" y2="46" stroke="#1a1a2e" stroke-width="2.5" stroke-linecap="round"/>'
+        : '<path d="M 28 50 Q 40 44 52 50" stroke="#1a1a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>'}
+      <!-- Arms -->
+      <rect x="8" y="52" width="12" height="6" rx="3" fill="${faceColor}" opacity="0.8"/>
+      <rect x="60" y="52" width="12" height="6" rx="3" fill="${faceColor}" opacity="0.8"/>
+      <!-- Legs -->
+      <rect x="25" y="82" width="10" height="12" rx="4" fill="${faceColor}" opacity="0.8"/>
+      <rect x="45" y="82" width="10" height="12" rx="4" fill="${faceColor}" opacity="0.8"/>
+      <!-- Chest light -->
+      <circle cx="40" cy="65" r="5" fill="white" opacity="0.4"/>
+      <circle cx="40" cy="65" r="3" fill="white" opacity="0.6" class="chest-light"/>
+      <!-- Text on head -->
+      <text x="40" y="25" text-anchor="middle" font-size="6" fill="#1a1a2e" font-family="monospace" font-weight="bold">CS</text>
+    </svg>`;
+}
+
 function getWebviewContent(findings, filename, complexity) {
     const warnings = findings.filter(f => f.type === 'warning').length;
     const infos = findings.filter(f => f.type === 'info').length;
     const errors = findings.filter(f => f.type === 'error').length;
+
+    const mood = errors > 0 ? 'error' : warnings > 0 ? 'warning' : 'happy';
 
     const rows = findings.map(f => {
         const colors = {
@@ -51,6 +91,12 @@ function getWebviewContent(findings, filename, complexity) {
         complexity === 'O(n)' ? '#5bc0de' :
         complexity === 'O(n^2)' ? '#f0ad4e' : '#d9534f';
 
+    const robotMessage = mood === 'happy'
+        ? '✨ Your code looks great!'
+        : mood === 'warning'
+        ? '🔍 I found some issues to fix!'
+        : '🚨 Errors detected!';
+
     return `<!DOCTYPE html>
     <html>
     <head>
@@ -67,13 +113,56 @@ function getWebviewContent(findings, filename, complexity) {
             .header {
                 display: flex;
                 align-items: center;
-                gap: 10px;
+                justify-content: space-between;
                 margin-bottom: 20px;
                 padding-bottom: 15px;
                 border-bottom: 1px solid #333;
             }
             .header h1 { color: #569cd6; font-size: 1.3em; }
             .filename { color: #888; font-size: 0.85em; margin-top: 2px; }
+            .robot-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+            }
+            .robot {
+                animation: bounce 2s ease-in-out infinite;
+                cursor: pointer;
+                filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
+            }
+            .robot:hover {
+                animation: dance 0.5s ease-in-out infinite;
+            }
+            @keyframes bounce {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-6px); }
+            }
+            @keyframes dance {
+                0%, 100% { transform: translateY(0px) rotate(-5deg); }
+                50% { transform: translateY(-4px) rotate(5deg); }
+            }
+            .eye-left, .eye-right {
+                animation: blink 3s ease-in-out infinite;
+            }
+            @keyframes blink {
+                0%, 90%, 100% { ry: 6; }
+                95% { ry: 1; }
+            }
+            .chest-light {
+                animation: pulse 1.5s ease-in-out infinite;
+            }
+            @keyframes pulse {
+                0%, 100% { opacity: 0.6; r: 3; }
+                50% { opacity: 1; r: 4; }
+            }
+            .robot-message {
+                font-size: 0.75em;
+                color: #888;
+                text-align: center;
+                max-width: 90px;
+                line-height: 1.3;
+            }
             .stats { display: flex; gap: 10px; margin-bottom: 20px; }
             .stat-card { flex: 1; padding: 12px; border-radius: 6px; text-align: center; }
             .stat-number { font-size: 1.8em; font-weight: bold; }
@@ -97,6 +186,10 @@ function getWebviewContent(findings, filename, complexity) {
             <div>
                 <h1>🔍 CodeScale AI</h1>
                 <div class="filename">${filename || 'No file'}</div>
+            </div>
+            <div class="robot-container">
+                ${getRobotSVG(mood)}
+                <div class="robot-message">${robotMessage}</div>
             </div>
         </div>
 
