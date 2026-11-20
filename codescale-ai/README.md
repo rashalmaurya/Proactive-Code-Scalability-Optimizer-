@@ -1,65 +1,47 @@
-# codescale-ai README
+﻿# CodeScale AI — Proactive Code Scalability Optimizer
 
-This is the README for your extension "codescale-ai". After writing up a brief description, we recommend including the following sections.
+> Find code that works small but breaks big. Evidence first, AI second.
+
+## What is CodeScale AI?
+
+CodeScale AI is a VS Code extension that analyses Python code for performance issues, scalability problems, and potential bugs — before they become serious problems in production.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- 🔍 **Smart Code Analysis** — Detects nested loops, inefficient data structures, repeated operations
+- 📊 **Complexity Estimation** — Estimates time and space complexity (O(1), O(n), O(n²))
+- ⚡ **Benchmark Runner** — Measures actual execution time and memory usage
+- 🔄 **Scalability Crossover Finder** — Finds the input size where optimized code becomes faster
+- ✅ **Correctness Verifier** — Ensures optimized code produces the same results
+- 💡 **DSA-Aware Suggestions** — Recommends better algorithms and data structures
+- 🔒 **Secret Scanner** — Detects accidentally committed API keys and passwords
+- 🧪 **Edge Case Advisor** — Tests your code against empty, large, and unusual inputs
+- 📈 **Algorithm Comparison** — Compares two algorithms side by side
+- 🕐 **History and Reports** — Tracks analysis results over time
+- 🧹 **Data Cleaner** — Cleans CSV files by removing duplicates and fixing missing values
+- 🗂️ **Repo-wide Analysis** — Scans your entire project for issues
 
-For example if there is an image subfolder under your extension project workspace:
+## How to Use
 
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+1. Open a Python file in VS Code
+2. Press **Ctrl + Shift + P**
+3. Type **CodeScale AI: Analyze Code**
+4. Press Enter
+5. The CodeScale AI dashboard opens on the right
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- VS Code 1.144+
+- Python 3.12+
+- uv (Python package manager)
 
-## Extension Settings
+## Tech Stack
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+- VS Code Extension API (JavaScript)
+- Python 3.12 via uv
+- Python AST for static analysis
+- pytest for testing
 
-For example:
+## Author
 
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Built for the International AI Coding Competition.
